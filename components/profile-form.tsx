@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { toast } from '@/hooks/use-toast'
+import { toast } from '@/components/ui/use-toast'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,14 +66,12 @@ export default function ProfileForm({ user }: { user: User }) {
         <form action={updateAction} className="space-y-6">
           <div className="flex flex-col items-center space-y-4">
             <div className="relative w-32 h-32">
-              {avatarUrl && (
-                <Image
-                  src={avatarUrl}
-                  alt="Profile"
-                  fill
-                  className="rounded-full object-cover"
-                />
-              )}
+              <Image
+                src={avatarUrl || "/placeholder.svg"}
+                alt="Profile"
+                fill
+                className="rounded-full object-cover"
+              />
             </div>
             <div>
               <Input

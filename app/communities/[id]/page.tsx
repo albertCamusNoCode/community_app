@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import PostFeed from '@/components/post-feed'
+import PostFeed from '@/components/community/post-feed'
 
 interface Community {
   id: string
