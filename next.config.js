@@ -1,6 +1,6 @@
 module.exports = {
   images: {
-    domains: ['api.dicebear.com'],
+    domains: ['api.dicebear.com']
   },
   // other configurations...
 } 

@@ -46,15 +46,19 @@ export default function Page() {
 
 export default function FetchDataSteps() {
   return (
-    <ol className="flex flex-col gap-6">
-      <TutorialStep title="Create some tables and insert some data">
-        <p>
+    <ol className="flex flex-col gap-6" data-oid="yz1d-o1">
+      <TutorialStep
+        title="Create some tables and insert some data"
+        data-oid="5sd1wl."
+      >
+        <p data-oid="arpgnyv">
           Head over to the{" "}
           <a
             href="https://supabase.com/dashboard/project/_/editor"
             className="font-bold hover:underline text-foreground/80"
             target="_blank"
             rel="noreferrer"
+            data-oid="9wh4qxz"
           >
             Table Editor
           </a>{" "}
@@ -66,30 +70,39 @@ export default function FetchDataSteps() {
             className="font-bold hover:underline text-foreground/80"
             target="_blank"
             rel="noreferrer"
+            data-oid="mkunv:4"
           >
             SQL Editor
           </a>{" "}
           and click RUN!
         </p>
-        <CodeBlock code={create} />
+        <CodeBlock code={create} data-oid="p76gi2f" />
       </TutorialStep>
 
-      <TutorialStep title="Query Supabase data from Next.js">
-        <p>
+      <TutorialStep title="Query Supabase data from Next.js" data-oid="i1zu:mi">
+        <p data-oid="sp2gven">
           To create a Supabase client and query data from an Async Server
           Component, create a new page.tsx file at{" "}
-          <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
+          <span
+            className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border"
+            data-oid="e-mw686"
+          >
             /app/notes/page.tsx
           </span>{" "}
           and add the following.
         </p>
-        <CodeBlock code={server} />
-        <p>Alternatively, you can use a Client Component.</p>
-        <CodeBlock code={client} />
+        <CodeBlock code={server} data-oid="kz4rx0-" />
+        <p data-oid=":e-10ur">Alternatively, you can use a Client Component.</p>
+        <CodeBlock code={client} data-oid="b6xgg3." />
       </TutorialStep>
 
-      <TutorialStep title="Build in a weekend and scale to millions!">
-        <p>You're ready to launch your product to the world! 🚀</p>
+      <TutorialStep
+        title="Build in a weekend and scale to millions!"
+        data-oid="lj9m.x4"
+      >
+        <p data-oid="w.lgeip">
+          You're ready to launch your product to the world! 🚀
+        </p>
       </TutorialStep>
     </ol>
   );

@@ -14,9 +14,21 @@ const CopyIcon = () => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    data-oid="o1hfkkr"
   >
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    <rect
+      x="9"
+      y="9"
+      width="13"
+      height="13"
+      rx="2"
+      ry="2"
+      data-oid="zpvekcr"
+    ></rect>
+    <path
+      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+      data-oid="grhl88o"
+    ></path>
   </svg>
 );
 
@@ -31,8 +43,9 @@ const CheckIcon = () => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    data-oid="ta_s-xt"
   >
-    <polyline points="20 6 9 17 4 12"></polyline>
+    <polyline points="20 6 9 17 4 12" data-oid="j_836nn"></polyline>
   </svg>
 );
 
@@ -46,16 +59,19 @@ export function CodeBlock({ code }: { code: string }) {
   };
 
   return (
-    <pre className="bg-muted rounded-md p-6 my-6 relative">
+    <pre className="bg-muted rounded-md p-6 my-6 relative" data-oid="cwfil-_">
       <Button
         size="icon"
         onClick={copy}
         variant={"outline"}
         className="absolute right-2 top-2"
+        data-oid="_mv52:8"
       >
         {icon}
       </Button>
-      <code className="text-xs p-3">{code}</code>
+      <code className="text-xs p-3" data-oid="xx7:r4e">
+        {code}
+      </code>
     </pre>
   );
 }
