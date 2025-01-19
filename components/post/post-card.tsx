@@ -157,7 +157,27 @@ export function PostCard({ post }: PostCardProps) {
               onReact={handleReaction}
             />
           ))}
-          <ReactionPicker onReactionSelect={handleReaction} />
+          <ReactionPicker 
+            selectedReactions={post.current_user_reactions || []}
+            onReactionsUpdate={async (newReactions) => {
+              try {
+                // Remove all existing reactions first
+                if (post.current_user_reactions?.length) {
+                  await removeReaction(post.id);
+                }
+                // Add new reactions
+                for (const type of newReactions) {
+                  await addReaction(post.id, type);
+                }
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: error instanceof Error ? error.message : "Something went wrong",
+                  variant: "destructive",
+                });
+              }
+            }}
+          />
         </div>
       </CardFooter>
 

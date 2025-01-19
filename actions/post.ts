@@ -114,24 +114,46 @@ export async function addReaction(postId: string, reactionType: ReactionType) {
     throw new Error("You must be a member of the community to react to posts");
   }
 
-  const { error } = await supabase
+  // Check if reaction already exists
+  const { data: existingReaction } = await supabase
     .from("post_reactions")
-    .upsert({
-      post_id: postId,
-      user_id: user.id,
-      reaction_type: reactionType,
-    }, {
-      onConflict: 'post_id,user_id'
-    });
+    .select()
+    .eq("post_id", postId)
+    .eq("user_id", user.id)
+    .eq("reaction_type", reactionType)
+    .single();
 
-  if (error) {
-    throw new Error(error.message);
+  if (existingReaction) {
+    // If reaction already exists, remove it (toggle behavior)
+    const { error } = await supabase
+      .from("post_reactions")
+      .delete()
+      .eq("post_id", postId)
+      .eq("user_id", user.id)
+      .eq("reaction_type", reactionType);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  } else {
+    // If reaction doesn't exist, add it
+    const { error } = await supabase
+      .from("post_reactions")
+      .insert({
+        post_id: postId,
+        user_id: user.id,
+        reaction_type: reactionType,
+      });
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   revalidatePath(`/dashboard/communities/${post.community_id}`);
 }
 
-export async function removeReaction(postId: string) {
+export async function removeReaction(postId: string, reactionType?: ReactionType) {
   const supabase = await createClient();
   
   const user = await getCurrentUser();
@@ -149,10 +171,18 @@ export async function removeReaction(postId: string) {
     throw new Error(postError.message);
   }
 
-  const { error } = await supabase
+  const query = supabase
     .from("post_reactions")
     .delete()
-    .match({ post_id: postId, user_id: user.id });
+    .eq("post_id", postId)
+    .eq("user_id", user.id);
+
+  // If reactionType is provided, only remove that specific reaction
+  if (reactionType) {
+    query.eq("reaction_type", reactionType);
+  }
+
+  const { error } = await query;
 
   if (error) {
     throw new Error(error.message);

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from 'react';
 import { ReactionType } from "@/types/post";
 import {
   Popover,
@@ -19,14 +20,24 @@ const AVAILABLE_REACTIONS: { type: ReactionType; emoji: string }[] = [
 ];
 
 interface ReactionPickerProps {
-  onReactionSelect: (type: ReactionType) => void;
+  selectedReactions?: ReactionType[];
+  onReactionsUpdate: (newReactions: ReactionType[]) => void;
   className?: string;
 }
 
 export function ReactionPicker({
-  onReactionSelect,
+  selectedReactions = [], // Provide default empty array
+  onReactionsUpdate,
   className,
 }: ReactionPickerProps) {
+  const handleReactionClick = (type: ReactionType) => {
+    const currentReactions = selectedReactions || [];
+    const newReactions = currentReactions.includes(type)
+      ? currentReactions.filter(r => r !== type) // Remove reaction
+      : [...currentReactions, type]; // Add reaction
+    onReactionsUpdate(newReactions);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -45,8 +56,10 @@ export function ReactionPicker({
               key={type}
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-muted"
-              onClick={() => onReactionSelect(type)}
+              className={cn("h-8 w-8 p-0 hover:bg-muted", {
+                'bg-muted': (selectedReactions || []).includes(type),
+              })}
+              onClick={() => handleReactionClick(type)}
             >
               <span className="text-lg">{emoji}</span>
             </Button>
