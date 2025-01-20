@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+// Commented out for now - will be used for access type feature later
+/*
 import {
   Select,
   SelectContent,
@@ -13,40 +15,59 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+*/
 import { toast } from "@/app/actions/use-toast";
 import { createCommunity } from "@/app/actions/community";
-import type { AccessType } from "../types";
+// import type { AccessType } from "../types";
 
 export function CreateForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [accessType, setAccessType] = useState<AccessType>("open");
+  // Commented out for now - will be used for access type feature later
+  // const [accessType, setAccessType] = useState<AccessType>("open");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!name.trim()) {
+      toast({
+        title: "Error",
+        description: "Community name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
       const formData = new FormData();
-      formData.append('name', name);
-      formData.append('description', description);
+      formData.append('name', name.trim());
+      formData.append('description', description.trim());
       formData.append('imageUrl', ''); // Default empty for now
-      formData.append('accessType', accessType);
+      // Commented out for now - will be used for access type feature later
+      // formData.append('accessType', accessType);
 
       const community = await createCommunity(formData);
       
+      if (!community || !community.id) {
+        throw new Error("Failed to create community - no community data returned");
+      }
+
       toast({
         title: "Community created",
         description: "Your new community has been created successfully!",
       });
       
       router.push(`/dashboard/communities/${community.id}`);
+      router.refresh();
     } catch (error) {
+      console.error('Error in form submission:', error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create community",
+        title: "Error creating community",
+        description: error instanceof Error ? error.message : "Failed to create community. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -63,6 +84,10 @@ export function CreateForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          disabled={isLoading}
+          placeholder="Enter community name"
+          minLength={1}
+          maxLength={100}
         />
       </div>
       <div className="space-y-2">
@@ -71,9 +96,12 @@ export function CreateForm() {
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          required
+          disabled={isLoading}
+          placeholder="Describe your community"
+          maxLength={500}
         />
       </div>
+      {/* Commented out for now - will be used for access type feature later
       <div className="space-y-2">
         <Label htmlFor="accessType">Access Type</Label>
         <Select
@@ -90,7 +118,8 @@ export function CreateForm() {
           </SelectContent>
         </Select>
       </div>
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      */}
+      <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? "Creating..." : "Create Community"}
       </Button>
     </form>

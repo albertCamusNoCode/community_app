@@ -93,6 +93,8 @@ export async function createCommunity(formData: FormData) {
   const description = formData.get('description') as string;
   const imageUrl = formData.get('imageUrl') as string;
 
+  console.log('Creating community:', { name, description, imageUrl, userId: user.id });
+
   const { data: community, error } = await supabase
     .from('communities')
     .insert([
@@ -107,8 +109,11 @@ export async function createCommunity(formData: FormData) {
     .single();
 
   if (error) {
+    console.error('Error creating community:', error);
     throw new Error(error.message);
   }
+
+  console.log('Created community:', community);
 
   // Add creator as admin
   const { error: memberError } = await supabase.from('community_members').insert([
@@ -120,6 +125,7 @@ export async function createCommunity(formData: FormData) {
   ]);
 
   if (memberError) {
+    console.error('Error adding creator as admin:', memberError);
     throw new Error(memberError.message);
   }
 

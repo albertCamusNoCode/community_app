@@ -12,7 +12,7 @@ export default function Home() {
       </p>
       <div className="flex justify-center" data-oid="kjkbfbw">
         <Button variant="outline" asChild data-oid="3a19ffr">
-          <Link href="/create-community" data-oid="nd4zlfh">
+          <Link href="/dashboard/create-community" data-oid="nd4zlfh">
             Create a Community
           </Link>
         </Button>
