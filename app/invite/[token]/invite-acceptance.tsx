@@ -11,7 +11,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/app/actions/use-toast";
 
 interface InviteData {
   communityName: string;

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { PostWithMetadata } from "@/actions/post";
+import { PostWithMetadata } from "@/app/actions/post";
 import { PostCard } from "./post-card";
-import { getPosts } from "@/actions/post";
+import { getPosts } from "@/app/actions/post";
 import { usePostFeed } from "./post-feed-context";
 
 interface PostFeedProps {

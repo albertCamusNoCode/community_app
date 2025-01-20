@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Reply } from "@/actions/reply";
+import { Reply } from "@/app/actions/reply";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "@/actions/use-toast";
+import { toast } from "@/app/actions/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import { createReply, updateReply, deleteReply } from "@/actions/reply";
+import { createReply, updateReply, deleteReply } from "@/app/actions/reply";
 
 interface ReplyProps {
   reply: Reply;

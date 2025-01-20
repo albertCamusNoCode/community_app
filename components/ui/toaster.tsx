@@ -1,6 +1,6 @@
 "use client";
 
-import { useToast } from "@/actions/use-toast";
+import { useToast } from "@/app/actions/use-toast";
 import {
   Toast,
   ToastClose,

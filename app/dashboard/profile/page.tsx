@@ -1,5 +1,5 @@
 import { ProfileForm } from "./components/profile-form";
-import { getUser } from "@/actions/auth";
+import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { User } from "./types";

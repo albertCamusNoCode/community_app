@@ -103,6 +103,47 @@ export type Database = {
         }
         Relationships: []
       }
+      community_invites: {
+        Row: {
+          community_id: string
+          created_at: string | null
+          email: string | null
+          expires_at: string
+          id: string
+          invite_token: string
+          inviter_id: string
+          status: Database["public"]["Enums"]["invite_status"] | null
+        }
+        Insert: {
+          community_id: string
+          created_at?: string | null
+          email?: string | null
+          expires_at: string
+          id?: string
+          invite_token: string
+          inviter_id: string
+          status?: Database["public"]["Enums"]["invite_status"] | null
+        }
+        Update: {
+          community_id?: string
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          inviter_id?: string
+          status?: Database["public"]["Enums"]["invite_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_invites_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_members: {
         Row: {
           community_id: string
@@ -125,6 +166,88 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "community_members_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          community_id: string
+          created_at: string
+          description: string
+          end_time: string
+          host: string
+          id: string
+          is_virtual: boolean | null
+          location: string
+          max_attendees: number | null
+          start_time: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          community_id: string
+          created_at?: string
+          description: string
+          end_time: string
+          host: string
+          id?: string
+          is_virtual?: boolean | null
+          location: string
+          max_attendees?: number | null
+          start_time: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          community_id?: string
+          created_at?: string
+          description?: string
+          end_time?: string
+          host?: string
+          id?: string
+          is_virtual?: boolean | null
+          location?: string
+          max_attendees?: number | null
+          start_time?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_community_id_fkey"
             columns: ["community_id"]
             isOneToOne: false
             referencedRelation: "communities"
@@ -438,6 +561,12 @@ export type Database = {
           creator: Json
         }[]
       }
+      get_event_attendee_count: {
+        Args: {
+          event_id: string
+        }
+        Returns: number
+      }
       get_post_with_metadata: {
         Args: {
           post_id: string
@@ -481,6 +610,7 @@ export type Database = {
       }
     }
     Enums: {
+      invite_status: "pending" | "accepted" | "expired" | "cancelled"
       notification_type: "mention" | "reply" | "reaction" | "community_update"
       reaction_type: "like" | "heart" | "celebrate" | "support" | "insightful"
       report_reason:

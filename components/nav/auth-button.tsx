@@ -1,6 +1,6 @@
 "use client";
 
-import { signOutAction } from "@/actions/auth";
+import { signOutAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
