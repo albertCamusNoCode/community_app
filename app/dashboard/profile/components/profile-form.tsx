@@ -65,141 +65,116 @@ function bindActionToForm(action: typeof updateProfile) {
 
 export function ProfileForm({ user }: { user: User }) {
   const router = useRouter();
-  const [avatarUrl, setAvatarUrl] = useState(user.user_metadata?.avatar_url || "");
-  const [formState, formAction] = useFormState(
+  const [state, formAction] = useFormState(
     bindActionToForm(updateProfile),
     initialState
   );
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      setIsDeleting(true);
-      const result = await deleteAccount();
-      if (result.success) {
-        toast({ title: "Account Deleted", description: result.message });
-        router.push("/");
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete account",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || "");
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Edit Profile</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="space-y-6">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative w-32 h-32">
-              <Image
-                src={avatarUrl || "/placeholder.svg"}
-                alt="Profile"
-                fill
-                className="rounded-full object-cover"
-              />
+    <div className="max-w-2xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Personal Information</CardTitle>
+        </CardHeader>
+        <form action={formAction}>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="avatar">Profile Picture</Label>
+              <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden border">
+                  <Image
+                    src={avatarUrl || "/placeholder.svg"}
+                    alt="Profile picture"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <Input
+                  id="avatar_url"
+                  name="avatar_url"
+                  type="url"
+                  placeholder="Enter image URL"
+                  defaultValue={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                />
+              </div>
             </div>
-            <div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
               <Input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                id="avatar-upload"
+                id="name"
+                name="name"
+                defaultValue={user.name || ""}
+                placeholder="Enter your name"
               />
-              <Label
-                htmlFor="avatar-upload"
-                className="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                Change Avatar
-              </Label>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              defaultValue={user.email}
-              disabled
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              name="username"
-              defaultValue={user.user_metadata?.username || ""}
-              required
-            />
-          </div>
-
-          {formState.message && (
-            <p className={formState.success ? "text-green-600" : "text-red-600"}>
-              {formState.message}
-            </p>
-          )}
-
-          <SubmitButton />
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={user.email || ""}
+                disabled
+              />
+              <p className="text-sm text-muted-foreground">
+                Email cannot be changed
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <SubmitButton />
+          </CardFooter>
         </form>
-      </CardContent>
+      </Card>
 
-      <Separator className="my-4" />
+      <Separator className="my-8" />
 
-      <CardFooter>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive">Delete Account</Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your
-                account and remove your data from our servers.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteAccount}
-                disabled={isDeleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isDeleting ? "Deleting..." : "Delete Account"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardFooter>
-    </Card>
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">Delete Account</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your
+                  account and remove your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={async () => {
+                    const result = await deleteAccount();
+                    if (result.success) {
+                      toast({
+                        title: "Account deleted",
+                        description: result.message,
+                      });
+                      router.push("/auth/login");
+                    } else {
+                      toast({
+                        title: "Error",
+                        description: result.message,
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  Delete Account
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

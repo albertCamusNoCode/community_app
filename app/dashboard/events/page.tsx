@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import EventList from "@/components/features/events/event-list";
-import EventListSkeleton from "@/components/features/events/event-list-skeleton";
+import EventList from "./event-list";
+import EventListSkeleton from "./event-list-skeleton";
 
 export default function EventsPage() {
   return (

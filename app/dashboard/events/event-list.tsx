@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import EventItem from "@/components/features/events/event-item";
+import EventItem from "./event-item";
 
 interface Event {
   id: string;

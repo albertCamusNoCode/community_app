@@ -1,11 +1,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+import { getUser } from './auth'
 import type { ProfileActionState } from '@/app/dashboard/profile/types'
 
 interface ProfileUpdateData {
-  username?: string
-  password?: string
+  name?: string
+  avatar_url?: string
 }
 
 export async function updateProfile(
@@ -13,52 +15,85 @@ export async function updateProfile(
   formData: FormData
 ): Promise<ProfileActionState> {
   try {
-    const username = formData.get('username') as string
-
-    if (!username) {
+    const supabase = await createClient()
+    const user = await getUser()
+    
+    if (!user) {
       return {
         success: false,
-        message: 'Username is required'
+        message: 'Not authenticated'
       }
     }
 
-    // TODO: Implement actual profile update logic
-    // This is a mock implementation
-    console.log('Updating profile:', { username })
+    const name = formData.get('name') as string
+    const avatar_url = formData.get('avatar_url') as string
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        name,
+        avatar_url,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id)
 
-    revalidatePath('/profile')
+    if (error) {
+      throw error
+    }
+
+    revalidatePath('/dashboard/profile')
     return {
       success: true,
       message: 'Profile updated successfully'
     }
   } catch (error) {
+    console.error('Profile update error:', error)
     return {
       success: false,
-      message: 'Failed to update profile'
+      message: error instanceof Error ? error.message : 'Failed to update profile'
     }
   }
 }
 
 export async function deleteAccount(): Promise<{ success: boolean; message: string }> {
   try {
-    // TODO: Implement actual account deletion logic
-    // This is a mock implementation
-    console.log('Deleting account')
+    const supabase = await createClient()
+    const user = await getUser()
+    
+    if (!user) {
+      return {
+        success: false,
+        message: 'Not authenticated'
+      }
+    }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Delete profile first (due to foreign key constraints)
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', user.id)
 
+    if (profileError) {
+      throw profileError
+    }
+
+    // Delete auth user
+    const { error: authError } = await supabase.auth.admin.deleteUser(user.id)
+
+    if (authError) {
+      throw authError
+    }
+
+    revalidatePath('/dashboard/profile')
     return {
       success: true,
       message: 'Account deleted successfully'
     }
   } catch (error) {
+    console.error('Account deletion error:', error)
     return {
       success: false,
-      message: 'Failed to delete account'
+      message: error instanceof Error ? error.message : 'Failed to delete account'
     }
   }
 }
