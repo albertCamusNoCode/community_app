@@ -12,17 +12,13 @@ import PostFeed from "./components/post-feed";
 import { PostFeedProvider } from "./components/post-feed-context";
 import { PostWithMetadata } from "@/app/actions/post";
 
-export default async function CommunityPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function CommunityPage(props: any) {
   const currentUser = await getUser();
   if (!currentUser) {
     throw new Error("Unauthorized");
   }
 
-  const communityId = await Promise.resolve(params.id);
+  const communityId = await Promise.resolve(props.params.id);
 
   try {
     const [community, posts, events] = await Promise.all([

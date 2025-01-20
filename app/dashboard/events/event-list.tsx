@@ -11,113 +11,94 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EventItem } from "./event-item";
 import type { Event } from "./types";
+import { getEvents } from "@/app/actions/events";
+import { createClient } from "@/lib/supabase/client";
 
 interface Community {
   id: string;
   name: string;
 }
 
-async function getEvents(): Promise<Event[]> {
-  // TODO: Implement actual data fetching
-  return [
-    {
-      id: "1",
-      title: "Mindful Mornings",
-      subtitle: "Sunrise Meditation Series",
-      communityName: "Meditation Series",
-      description:
-        "Join us for a transformative series of early morning meditation sessions designed to start your day with peace and intention. We invite you to connect with the tranquil energy...",
-      startTime: "2024-02-02T13:00:00Z",
-      endTime: "2024-02-02T14:00:00Z",
-      location: "Online",
-      host: "Mathilde Leo",
-      attendees: 42,
-      coverImage:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-egGFpbNb3nZu6g7pCjeuCtgrlOWevj.png",
-      tags: ["Start clear", "Elevate your day"],
-    },
-    {
-      id: "2",
-      title: "Evening Flow",
-      subtitle: "Yoga & Meditation",
-      communityName: "Wellness Series",
-      description:
-        "End your day with a calming session of yoga and meditation, designed to help you unwind and prepare for restful sleep.",
-      startTime: "2024-02-03T00:00:00Z",
-      endTime: "2024-02-03T01:00:00Z",
-      location: "Online",
-      host: "Sarah Chen",
-      attendees: 35,
-      tags: ["Unwind", "Find peace"],
-    },
-  ];
-}
-
 async function getCommunities(): Promise<Community[]> {
-  // TODO: Implement actual data fetching
-  return [
-    { id: "1", name: "Meditation Series" },
-    { id: "2", name: "Wellness Series" },
-  ];
+  const supabase = createClient();
+  const { data: communities, error } = await supabase
+    .from('communities')
+    .select('id, name')
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching communities:', error);
+    return [];
+  }
+
+  return communities || [];
 }
 
-export default function EventList() {
-  const [events, setEvents] = useState<Event[]>([]);
+export function EventList() {
+  const [selectedCommunity, setSelectedCommunity] = useState<string>("");
   const [communities, setCommunities] = useState<Community[]>([]);
-  const [selectedCommunity, setSelectedCommunity] = useState<string>("all");
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const [eventData, communityData] = await Promise.all([
-        getEvents(),
-        getCommunities(),
-      ]);
-      setEvents(eventData);
-      setCommunities(communityData);
-    };
-    fetchData();
+    async function loadCommunities() {
+      const data = await getCommunities();
+      setCommunities(data);
+      if (data.length > 0) {
+        setSelectedCommunity(data[0].id);
+      }
+      setIsLoading(false);
+    }
+    loadCommunities();
   }, []);
 
-  const filteredEvents =
-    selectedCommunity === "all"
-      ? events
-      : events.filter((event) => event.communityName === selectedCommunity);
+  useEffect(() => {
+    async function loadEvents() {
+      if (selectedCommunity) {
+        setIsLoading(true);
+        const data = await getEvents(selectedCommunity);
+        setEvents(data);
+        setIsLoading(false);
+      }
+    }
+    loadEvents();
+  }, [selectedCommunity]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="space-y-6" data-oid="rjznoij">
-      <div className="flex justify-between items-center" data-oid="ths:zh5">
-        <h2 className="text-2xl font-bold" data-oid="af3k-cp">
-          Next event
-        </h2>
+    <div className="space-y-4">
+      <div className="flex items-center space-x-4">
         <Select
           value={selectedCommunity}
           onValueChange={setSelectedCommunity}
-          data-oid="z9f6q:6"
         >
-          <SelectTrigger className="w-[200px]" data-oid="0:rvyo2">
-            <SelectValue placeholder="Filter by Series" data-oid="af8rw4t" />
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select community" />
           </SelectTrigger>
-          <SelectContent data-oid=":orcu:8">
-            <SelectItem value="all" data-oid="o69gmf.">
-              All Series
-            </SelectItem>
+          <SelectContent>
             {communities.map((community) => (
-              <SelectItem
-                key={community.id}
-                value={community.name}
-                data-oid="xo4j9-y"
-              >
+              <SelectItem key={community.id} value={community.id}>
                 {community.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      <ScrollArea className="pr-4" data-oid="rtyms-i">
-        <div className="space-y-6" data-oid="pkihwen">
-          {filteredEvents.map((event) => (
-            <EventItem key={event.id} event={event} data-oid="u00r7wp" />
-          ))}
+
+      <ScrollArea className="h-[300px] rounded-md border p-4">
+        <div className="space-y-4">
+          {events.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground">
+              No upcoming events
+            </p>
+          ) : (
+            events.map((event) => (
+              <EventItem key={event.id} event={event} />
+            ))
+          )}
         </div>
       </ScrollArea>
     </div>
