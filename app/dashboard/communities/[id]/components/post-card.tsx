@@ -1,6 +1,7 @@
 "use client";
 
 import { addReaction, removeReaction, reportPost } from "@/actions/post";
+import { getReplies, createReply } from "@/actions/reply";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,10 +38,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ReactionPicker } from "./reaction-picker";
 import { cn } from "@/lib/utils";
 import { usePostFeed } from "@/app/dashboard/communities/[id]/components/post-feed-context";
+import { ReplyComponent } from "./reply";
+import type { Reply } from "@/actions/reply";
 
 const REACTION_EMOJIS: Record<ReactionType, string> = {
   like: "👍",
@@ -99,14 +102,37 @@ const reportReasons: { value: ReportReason; label: string }[] = [
 ];
 
 export function PostCard({ post }: { post: PostWithMetadata }) {
-  const { updatePost } = usePostFeed();
-  const [isPending, startTransition] = useTransition();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState<ReportReason>("spam");
   const [reportDescription, setReportDescription] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [showReplies, setShowReplies] = useState(false);
+  const [replies, setReplies] = useState<Reply[]>([]);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const { updatePost } = usePostFeed();
+
+  useEffect(() => {
+    if (showReplies) {
+      startTransition(refreshReplies);
+    }
+  }, [showReplies, post.id]);
+
+  const refreshReplies = async () => {
+    try {
+      const postReplies = await getReplies(post.id);
+      setReplies(postReplies);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load replies",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleReaction = async (type: ReactionType) => {
-    const hasReacted = hasReactedToType(type);
+    const hasReacted = post.current_user_reactions?.includes(type) || false;
     
     // Optimistically update the UI
     const newReactions = hasReacted 
@@ -141,10 +167,6 @@ export function PostCard({ post }: { post: PostWithMetadata }) {
     }
   };
 
-  const hasReactedToType = (type: ReactionType) => {
-    return post.current_user_reactions?.includes(type) || false;
-  };
-
   const handleReport = async () => {
     try {
       await reportPost(post.id, reportReason, reportDescription);
@@ -157,6 +179,28 @@ export function PostCard({ post }: { post: PostWithMetadata }) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReply = async () => {
+    try {
+      await createReply(post.id, replyContent);
+      setReplyContent("");
+      setIsReplying(false);
+      
+      // Refresh replies after a short delay to allow server revalidation
+      setTimeout(refreshReplies, 100);
+      
+      toast({
+        title: "Reply added",
+        description: "Your reply has been added successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add reply",
         variant: "destructive",
       });
     }
@@ -272,70 +316,124 @@ export function PostCard({ post }: { post: PostWithMetadata }) {
         )}
         <p className="text-muted-foreground whitespace-pre-wrap">{post.content}</p>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <div className="flex flex-wrap items-center gap-2 p-4 pt-0">
-          <div className="flex items-center gap-2">
-            {Object.entries(REACTION_EMOJIS)
-              .filter(([type]) => (post.reactions_count[type as ReactionType] || 0) > 0)
-              .map(([type, emoji]) => (
+      <CardFooter className="flex flex-col gap-4">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex flex-wrap items-center gap-2">
+            {Object.entries(REACTION_EMOJIS).map(([type, emoji]) => {
+              const reactionCount = getReactionCount(post.reactions_count, type as ReactionType);
+              if (reactionCount === 0) return null;
+              return (
                 <AnimatedReactionButton
                   key={type}
                   reactionType={type as ReactionType}
-                  count={getReactionCount(post.reactions_count, type as ReactionType)}
-                  isReacted={hasReactedToType(type as ReactionType)}
+                  count={reactionCount}
+                  isReacted={post.current_user_reactions?.includes(type as ReactionType)}
                   onReact={handleReaction}
                 />
-              ))}
+              );
+            })}
+            <ReactionPicker 
+              selectedReactions={post.current_user_reactions || []}
+              onReactionsUpdate={async (newReactions) => {
+                // Calculate which reactions to add/remove
+                const existingReactions = post.current_user_reactions || [];
+                const reactionsToAdd = newReactions.filter(r => !existingReactions.includes(r));
+                const reactionsToRemove = existingReactions.filter(r => !newReactions.includes(r));
+
+                // Update local state immediately
+                const updatedPost = {
+                  ...post,
+                  current_user_reactions: newReactions,
+                  reactions_count: {
+                    ...post.reactions_count,
+                    ...reactionsToAdd.reduce((acc, type) => ({
+                      ...acc,
+                      [type]: (post.reactions_count[type] || 0) + 1
+                    }), {}),
+                    ...reactionsToRemove.reduce((acc, type) => ({
+                      ...acc,
+                      [type]: Math.max(0, (post.reactions_count[type] || 0) - 1)
+                    }), {})
+                  }
+                };
+
+                // Update UI optimistically
+                updatePost(updatedPost);
+
+                try {
+                  // Remove reactions that are no longer selected
+                  if (reactionsToRemove.length) {
+                    await removeReaction(post.id);
+                  }
+                  // Add new reactions
+                  for (const type of reactionsToAdd) {
+                    await addReaction(post.id, type);
+                  }
+                } catch (error) {
+                  // Revert optimistic update on error
+                  updatePost(post);
+                  toast({
+                    title: "Error",
+                    description: error instanceof Error ? error.message : "Something went wrong",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            />
           </div>
-          <ReactionPicker 
-            selectedReactions={post.current_user_reactions || []}
-            onReactionsUpdate={async (newReactions) => {
-              // Calculate which reactions to add/remove
-              const existingReactions = post.current_user_reactions || [];
-              const reactionsToAdd = newReactions.filter(r => !existingReactions.includes(r));
-              const reactionsToRemove = existingReactions.filter(r => !newReactions.includes(r));
-
-              // Update local state immediately
-              const updatedPost = {
-                ...post,
-                current_user_reactions: newReactions,
-                reactions_count: {
-                  ...post.reactions_count,
-                  ...reactionsToAdd.reduce((acc, type) => ({
-                    ...acc,
-                    [type]: (post.reactions_count[type] || 0) + 1
-                  }), {}),
-                  ...reactionsToRemove.reduce((acc, type) => ({
-                    ...acc,
-                    [type]: Math.max(0, (post.reactions_count[type] || 0) - 1)
-                  }), {})
-                }
-              };
-
-              // Update UI optimistically
-              updatePost(updatedPost);
-
-              try {
-                // Remove reactions that are no longer selected
-                if (reactionsToRemove.length) {
-                  await removeReaction(post.id);
-                }
-                // Add new reactions
-                for (const type of reactionsToAdd) {
-                  await addReaction(post.id, type);
-                }
-              } catch (error) {
-                // Revert optimistic update on error
-                updatePost(post);
-                toast({
-                  title: "Error",
-                  description: error instanceof Error ? error.message : "Something went wrong",
-                  variant: "destructive",
-                });
-              }
-            }}
-          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowReplies(!showReplies)}
+          >
+            {showReplies ? "Hide Replies" : "Show Replies"}
+          </Button>
         </div>
+
+        {showReplies && (
+          <div className="w-full space-y-4">
+            {isReplying ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="Write a reply..."
+                  className="min-h-[100px]"
+                />
+                <div className="flex gap-2">
+                  <Button onClick={handleReply}>Reply</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsReplying(false);
+                      setReplyContent("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsReplying(true)}
+              >
+                Write a reply...
+              </Button>
+            )}
+
+            {replies.map((reply) => (
+              <ReplyComponent
+                key={reply.id}
+                reply={reply}
+                postId={post.id}
+                currentUserId={post.author.id}
+                onReplyAdded={refreshReplies}
+              />
+            ))}
+          </div>
+        )}
       </CardFooter>
     </div>
   );
