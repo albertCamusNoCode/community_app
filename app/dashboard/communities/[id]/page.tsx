@@ -22,7 +22,7 @@ export default async function CommunityPage({
     throw new Error("Unauthorized");
   }
 
-  const communityId = params.id;
+  const communityId = await Promise.resolve(params.id);
 
   try {
     const [community, posts, events] = await Promise.all([

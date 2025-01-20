@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { Header } from "@/components/nav/header";
 import { headers } from "next/headers";
+import Script from "next/script";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +24,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+        <Head>
+        <Script src="https://api.tempolabs.ai/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
+      </Head>
       <body className={inter.className}>
         {isHomePage && <Header />}
         <Toaster />

@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { TempoDevtools } from "tempo-devtools";
+import { useEffect } from "react";
 
 export default function Home() {
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_TEMPO) {
+      TempoDevtools.init();
+    }
+  }, []);
+
   return (
     <div className="space-y-6 text-center" data-oid="ypcc.ew">
       <h1 className="text-4xl font-bold" data-oid="j2:ka6_">

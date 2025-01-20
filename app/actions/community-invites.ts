@@ -22,20 +22,27 @@ export async function generateInviteLink(communityId: string): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
-  const { error } = await supabase
-    .from('community_invites')
-    .insert({
-      community_id: communityId,
-      invite_token: token,
-      expires_at: expiresAt.toISOString(),
-      inviter_id: user.id,
-      status: 'pending',
-    });
+  try {
+    const { error } = await supabase
+      .from('community_invites')
+      .insert({
+        community_id: communityId,
+        invite_token: token,
+        expires_at: expiresAt.toISOString(),
+        inviter_id: user.id,
+        status: 'pending',
+      });
 
-  if (error) throw error;
+    if (error) throw error;
 
-  // Return the full invite URL
-  return `${process.env.NEXT_PUBLIC_APP_URL}/invite/${token}`;
+    // Use window.location for client-side URL generation
+    const baseUrl = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : '';
+
+    return `${baseUrl}/invite/${token}`;
+  } catch (error) {
+    console.error('Error generating invite link:', error);
+    throw new Error('Failed to generate invite link. Please try again.');
+  }
 }
 
 /**
