@@ -1,4 +1,4 @@
-import { BottomNav } from "@/components/bottom-nav";
+import { BottomNav } from "@/components/nav/bottom-nav";
 import { getUser } from "@/actions/auth";
 import { redirect } from "next/navigation";
 
