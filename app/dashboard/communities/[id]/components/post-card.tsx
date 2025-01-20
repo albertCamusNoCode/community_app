@@ -1,11 +1,11 @@
 "use client";
 
-import { addReaction, removeReaction, reportPost } from "@/actions/post";
-import { getReplies, createReply } from "@/actions/reply";
+import { addReaction, removeReaction, reportPost } from "@/app/actions/post";
+import { getReplies, createReply } from "@/app/actions/reply";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
+  CardContent,  
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
@@ -15,12 +15,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PostWithMetadata, ReactionType, ReportReason } from "@/actions/post";
+import { PostWithMetadata, ReactionType, ReportReason } from "@/app/actions/post";
 import { formatDistanceToNow } from "date-fns";
 import { MoreHorizontal } from "lucide-react";
 import { useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "@/actions/use-toast";
+import { toast } from "@/app/actions/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,7 @@ import { ReactionPicker } from "./reaction-picker";
 import { cn } from "@/lib/utils";
 import { usePostFeed } from "@/app/dashboard/communities/[id]/components/post-feed-context";
 import { ReplyComponent } from "./reply";
-import type { Reply } from "@/actions/reply";
+import type { Reply } from "@/app/actions/reply";
 
 const REACTION_EMOJIS: Record<ReactionType, string> = {
   like: "👍",

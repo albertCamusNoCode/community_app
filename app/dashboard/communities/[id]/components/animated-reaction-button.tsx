@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactionType } from "@/actions/post";
+import { ReactionType } from "@/app/actions/post";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";

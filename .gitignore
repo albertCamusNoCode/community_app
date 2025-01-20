@@ -10,6 +10,12 @@
 !.yarn/releases
 !.yarn/versions
 
+# Tempo
+
+node_modules/
+**/tempobook/dynamic/
+**/tempobook/storyboards/
+
 # testing
 /coverage
 

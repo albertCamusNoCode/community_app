@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ReactionType } from "@/actions/post";
+import { ReactionType } from "@/app/actions/post";
 import {
   Popover,
   PopoverContent,

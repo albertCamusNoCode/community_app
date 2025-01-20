@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/actions/use-toast";
+import { toast } from "@/app/actions/use-toast";
 
 export default function CreateCommunity() {
   const [name, setName] = useState("");

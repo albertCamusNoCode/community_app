@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { Community } from "@/actions/community";
-import { joinCommunity } from "@/actions/community";
+import type { Community } from "@/app/actions/community";
+import { joinCommunity } from "@/app/actions/community";
+import { ManageMembersDialog } from "./manage-members-dialog";
 
 async function joinCommunityAction(formData: FormData) {
   "use server";
@@ -27,12 +28,17 @@ export function CommunityHeader({ community }: { community: Community }) {
                 {(community.member_count || 0).toLocaleString()} members
               </span>
             </div>
-            {!community.userRole && (
+            {community.userRole === 'admin' ? (
+              <ManageMembersDialog
+                communityId={community.id}
+                communityName={community.name}
+              />
+            ) : !community.userRole ? (
               <form action={joinCommunityAction}>
                 <input type="hidden" name="communityId" value={community.id} />
                 <Button type="submit" variant="secondary">Join Community</Button>
               </form>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

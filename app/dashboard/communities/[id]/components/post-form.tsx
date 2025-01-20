@@ -1,6 +1,6 @@
 'use client';
 
-import { createPost } from "@/actions/post";
+import { createPost } from "@/app/actions/post";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/actions/use-toast";
+import { toast } from "@/app/actions/use-toast";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { getUser } from "./auth";
+import { getUser } from "@/app/actions/auth";
 import { Database } from "@/lib/supabase/supabase-types";
 
 type MemberRole = "member" | "moderator" | "admin";
@@ -42,46 +42,44 @@ export async function getMyCommunities(): Promise<Community[]> {
 
   const communityIds = memberCommunities.map(m => m.community_id);
 
-  // Then get the community details
+  // Get communities with members
   const { data: communities, error } = await supabase
     .from('communities')
-    .select('*')
+    .select(`
+      *,
+      members:community_members (
+        role,
+        user_id
+      )
+    `)
     .in('id', communityIds);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  if (!communities) return [];
-
-  // Filter out null creator_ids and fetch creator profiles
+  // Get creator profiles
   const creatorIds = communities
-    .map(c => c.creator_id)
+    .map(community => community.creator_id)
     .filter((id): id is string => id !== null);
 
-  if (creatorIds.length === 0) {
-    return communities.map(community => ({
-      ...community,
-      creator: undefined
-    }));
-  }
-
-  const { data: creators, error: creatorsError } = await supabase
+  const { data: creators } = await supabase
     .from('profiles')
     .select('*')
     .in('id', creatorIds);
 
-  if (creatorsError) {
-    throw new Error(creatorsError.message);
-  }
+  // Map creators to their communities
+  const creatorsMap = creators?.reduce<Record<string, any>>((acc, creator) => {
+    acc[creator.id] = creator;
+    return acc;
+  }, {}) ?? {};
 
-  // Map creators to communities
-  const communitiesWithCreators = communities.map(community => ({
+  return communities.map((community: any) => ({
     ...community,
-    creator: community.creator_id ? creators?.find(c => c.id === community.creator_id) : undefined
+    creator: community.creator_id ? creatorsMap[community.creator_id] : null,
+    userRole: community.members?.find((m: any) => m.user_id === user.id)?.role,
+    member_count: community.members?.length,
   }));
-
-  return communitiesWithCreators;
 }
 
 export async function createCommunity(formData: FormData) {
@@ -132,58 +130,43 @@ export async function createCommunity(formData: FormData) {
 export async function getCommunity(id: string): Promise<Community> {
   const supabase = await createClient();
   const user = await getUser();
-
   if (!user) {
     throw new Error('Unauthorized');
   }
 
-  // Get community details
-  const { data: community, error: communityError } = await supabase
+  // Get the community with its members
+  const { data: community, error } = await supabase
     .from('communities')
-    .select('*')
+    .select(`
+      *,
+      members:community_members (
+        role,
+        user_id
+      )
+    `)
     .eq('id', id)
     .single();
 
-  if (communityError) {
-    throw new Error(communityError.message);
+  if (error) {
+    throw new Error(error.message);
   }
 
-  // Get creator profile if creator_id exists
+  // Get creator profile if it exists
   let creator = null;
   if (community.creator_id) {
-    const { data: creatorData, error: creatorError } = await supabase
+    const { data: creatorData } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', community.creator_id)
       .single();
-
-    if (creatorError) {
-      throw new Error(creatorError.message);
-    }
     creator = creatorData;
   }
 
-  // Get member count
-  const { data: memberCount, error: countError } = await supabase
-    .rpc('get_community_member_count', { community_id: id });
-
-  if (countError) {
-    throw new Error(countError.message);
-  }
-
-  // Get user's role in this community
-  const { data: memberRole } = await supabase
-    .from('community_members')
-    .select('role')
-    .eq('community_id', id)
-    .eq('user_id', user.id)
-    .single();
-
   return {
     ...community,
-    creator: creator || undefined,
-    member_count: memberCount,
-    userRole: memberRole?.role,
+    creator,
+    userRole: community.members?.find((m: any) => m.user_id === user.id)?.role,
+    member_count: community.members?.length,
   };
 }
 
@@ -198,7 +181,7 @@ export async function joinCommunity(communityId: string) {
     {
       community_id: communityId,
       user_id: user.id,
-      role: 'member' as const,
+      role: 'member',
     },
   ]);
 
@@ -206,7 +189,7 @@ export async function joinCommunity(communityId: string) {
     throw new Error(error.message);
   }
 
-  revalidatePath(`/dashboard/communities/${communityId}`);
+  revalidatePath('/dashboard/communities');
 }
 
 export async function leaveCommunity(communityId: string) {
@@ -226,7 +209,7 @@ export async function leaveCommunity(communityId: string) {
     throw new Error(error.message);
   }
 
-  revalidatePath(`/dashboard/communities/${communityId}`);
+  revalidatePath('/dashboard/communities');
 }
 
 export async function updateCommunityRole(
@@ -240,16 +223,16 @@ export async function updateCommunityRole(
     throw new Error('Unauthorized');
   }
 
-  // Check if current user is admin
-  const { data: currentUserRole, error: roleError } = await supabase
+  // Check if the current user is an admin
+  const { data: currentMember, error: memberError } = await supabase
     .from('community_members')
     .select('role')
     .eq('community_id', communityId)
     .eq('user_id', user.id)
     .single();
 
-  if (roleError || currentUserRole?.role !== 'admin') {
-    throw new Error('Unauthorized: Only admins can update roles');
+  if (memberError || currentMember.role !== 'admin') {
+    throw new Error('Unauthorized');
   }
 
   const { error } = await supabase

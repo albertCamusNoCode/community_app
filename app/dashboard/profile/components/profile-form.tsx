@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormState, useFormStatus } from "react-dom";
 import Image from "next/image";
-import { updateProfile, deleteAccount } from "@/actions/profile";
+import { updateProfile, deleteAccount } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/actions/use-toast";
+import { toast } from "@/app/actions/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,

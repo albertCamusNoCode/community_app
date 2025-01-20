@@ -1,6 +1,6 @@
 'use client';
 
-import { PostWithMetadata } from '@/actions/post';
+import { PostWithMetadata } from '@/app/actions/post';
 import { createContext, useContext, useState } from 'react';
 
 interface PostFeedContextType {

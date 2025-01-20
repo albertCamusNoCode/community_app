@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import type { Community } from "@/actions/community";
+import type { Community } from "@/app/actions/community";
 
 export function CommunityGrid({ communities }: { communities: Community[] }) {
   if (communities.length === 0) {

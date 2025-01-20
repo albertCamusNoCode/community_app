@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CommunityGrid } from "./components/community-grid";
-import { getMyCommunities } from "@/actions/community";
+import { getMyCommunities } from "@/app/actions/community";
 
 export default async function MyCommunities() {
   const communities = await getMyCommunities();

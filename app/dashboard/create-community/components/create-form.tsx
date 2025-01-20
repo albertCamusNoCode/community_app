@@ -13,23 +13,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/actions/use-toast";
+import { toast } from "@/app/actions/use-toast";
+import { createCommunity } from "@/app/actions/community";
 import type { AccessType } from "../types";
 
 export function CreateForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [accessType, setAccessType] = useState<AccessType>("open");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual community creation logic
-    toast({
-      title: "Community created",
-      description: "Your new community has been created successfully!",
-    });
-    router.push("/dashboard");
+    setIsLoading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('description', description);
+      formData.append('imageUrl', ''); // Default empty for now
+      formData.append('accessType', accessType);
+
+      const community = await createCommunity(formData);
+      
+      toast({
+        title: "Community created",
+        description: "Your new community has been created successfully!",
+      });
+      
+      router.push(`/dashboard/communities/${community.id}`);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create community",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,7 +76,10 @@ export function CreateForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="accessType">Access Type</Label>
-        <Select value={accessType} onValueChange={setAccessType}>
+        <Select
+          value={accessType}
+          onValueChange={(value: AccessType) => setAccessType(value)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select access type" />
           </SelectTrigger>
@@ -65,8 +90,8 @@ export function CreateForm() {
           </SelectContent>
         </Select>
       </div>
-      <Button type="submit" className="w-full">
-        Create Community
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "Creating..." : "Create Community"}
       </Button>
     </form>
   );

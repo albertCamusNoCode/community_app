@@ -1,5 +1,5 @@
 import { BottomNav } from "@/components/nav/bottom-nav";
-import { getUser } from "@/actions/auth";
+import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({

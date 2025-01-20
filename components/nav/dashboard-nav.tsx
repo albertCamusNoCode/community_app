@@ -1,7 +1,6 @@
 "use client";
 
 import { BottomNav } from "@/components/nav/bottom-nav";
-import { RightSidebar } from "@/components/community/right-sidebar";
 
 export function DashboardNav({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +12,6 @@ export function DashboardNav({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <div className="flex-shrink-0" style={{ zIndex: 1 }}>
-        <RightSidebar />
       </div>
       <BottomNav />
     </div>

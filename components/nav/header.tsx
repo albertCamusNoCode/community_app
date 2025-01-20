@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AuthButton } from "./auth-button";
-import { getUser } from "@/actions/auth";
+import { getUser } from "@/app/actions/auth";
 
 export async function Header() {
   const user = await getUser();

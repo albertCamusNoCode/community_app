@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, parseISO } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -10,22 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import EventItem from "./event-item";
-
-interface Event {
-  id: string;
-  title: string;
-  subtitle?: string;
-  communityName: string;
-  description: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  host: string;
-  attendees: number;
-  coverImage?: string;
-  tags?: string[];
-}
+import { EventItem } from "./event-item";
+import type { Event } from "./types";
 
 interface Community {
   id: string;
