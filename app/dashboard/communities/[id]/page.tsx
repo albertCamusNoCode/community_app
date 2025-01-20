@@ -4,11 +4,11 @@ import { getCurrentUser } from "@/actions/post";
 import { CommunityHeader } from "./components/header";
 import { EventsCard } from "./components/events-card";
 import { TrendingPosts } from "./components/trending-posts";
-import { PostForm } from "./post-form";
+import { PostForm } from "./components/post-form";
 import { getCommunity } from "@/actions/community";
 import { getPosts } from "@/actions/post";
-import PostFeed from "./post-feed";
-import { PostFeedProvider } from "./post-feed-context";
+import PostFeed from "./components/post-feed";
+import { PostFeedProvider } from "./components/post-feed-context";
 import { PostWithMetadata } from "@/actions/post";
 
 export default async function CommunityPage({

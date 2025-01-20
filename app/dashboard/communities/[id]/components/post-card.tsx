@@ -40,7 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { ReactionPicker } from "./reaction-picker";
 import { cn } from "@/lib/utils";
-import { usePostFeed } from "@/app/dashboard/communities/[id]/post-feed-context";
+import { usePostFeed } from "@/app/dashboard/communities/[id]/components/post-feed-context";
 
 const REACTION_EMOJIS: Record<ReactionType, string> = {
   like: "👍",
